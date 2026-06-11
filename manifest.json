@@ -1,0 +1,17 @@
+{
+  "name": "WeebWorld Premium",
+  "short_name": "WeebWorld",
+  "description": "Premium Anime Discovery and Watchlist Hub",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#18181b",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/parakeet/512/sakura.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

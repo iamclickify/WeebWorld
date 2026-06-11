@@ -10,8 +10,8 @@
 
   <!-- Navbar -->
   <nav class="bg-zinc-800 absolute top-0 left-0 w-full flex justify-between items-center px-6 py-4 z-50">
-    <h1 class="text-2xl font-extrabold text-blue-400">WeebWorld 🌸</h1>
-    <button class="md:hidden text-gray-300">☰</button>
+    <h1 class="text-2xl font-extrabold text-blue-400"><a href="index.html">WeebWorld</a> 🌸</h1>
+    <button class="md:hidden text-gray-300"><a href="index.html">☰</a></button>                                                                    
   </nav>
 
   <!-- Hero Section -->
@@ -25,7 +25,7 @@
         Welcome to WeebWorld 🌸
       </h2>
       <p class="mt-4 text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
-        Your ultimate hub for anime updates, dank weeb memes, and sick AMV edits.
+        Your ultimate hub for anime updates.
       </p>
       <a href="updates.html">
         <button class="mt-6 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:scale-110 transition-all duration-300 shadow-lg">
@@ -40,5 +40,15 @@
     Made with ❤️ by <span class="text-blue-400 font-bold">Clickify</span>
   </footer>
 
+  <!-- Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+          .catch(err => console.error('Service Worker registration failed:', err));
+      });
+    }
+  </script>
 </body>
 </html>

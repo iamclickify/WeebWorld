@@ -8,8 +8,8 @@
   </head>
   <body class="bg-zinc-900 text-white font-sans">
     <!-- Navbar -->
-    <nav class="bg-zinc-800 p-4 shadow-md flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-blue-400">WeebWorld</h1>
+    <nav class="bg-zinc-800 p-4 shadow-md flex justify-between items-center px-6 py-4 z-50">
+      <h1 class="text-2xl font-extrabold text-blue-400"><a href="index.html">WeebWorld</a> 🌸</h1>
       <ul class="flex gap-6">
         <li><a href="index.html" class="hover:text-blue-300">Home</a></li>
         <li>
@@ -24,9 +24,24 @@
       <p class="text-zinc-400 mt-2">
         Stay updated on your favorite shows airing this week!
       </p>
+      <div class="flex justify-center gap-4 mt-6">
+        <button id="view-now" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold transition-all hover:scale-105 cursor-pointer border-none">Live Now</button>
+        <button id="view-schedule" class="px-5 py-2.5 bg-zinc-800 text-gray-300 hover:text-white rounded-xl font-bold transition-all hover:scale-105 cursor-pointer border border-zinc-700">Weekly Calendar</button>
+      </div>
     </header>
+
+    <!-- Day Selector for Weekly Calendar -->
+    <div id="day-selector" class="flex flex-wrap justify-center gap-3 mb-8 px-6 hidden">
+      <button class="day-btn px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg font-bold transition-all cursor-pointer border border-zinc-700" data-day="monday">Monday</button>
+      <button class="day-btn px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg font-bold transition-all cursor-pointer border border-zinc-700" data-day="tuesday">Tuesday</button>
+      <button class="day-btn px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg font-bold transition-all cursor-pointer border border-zinc-700" data-day="wednesday">Wednesday</button>
+      <button class="day-btn px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg font-bold transition-all cursor-pointer border border-zinc-700" data-day="thursday">Thursday</button>
+      <button class="day-btn px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg font-bold transition-all cursor-pointer border border-zinc-700" data-day="friday">Friday</button>
+      <button class="day-btn px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg font-bold transition-all cursor-pointer border border-zinc-700" data-day="saturday">Saturday</button>
+      <button class="day-btn px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg font-bold transition-all cursor-pointer border border-zinc-700" data-day="sunday">Sunday</button>
+    </div>
     <!-- Search Box -->
-    <div class="flex justify-center mt-6">
+    <div id="search-container" class="flex justify-center mt-6">
       <input
         type="text"
         id="search-input"
@@ -41,7 +56,7 @@
       </button>
     </div>
     <!-- Enhanced Filter Section -->
-    <div class="max-w-6xl mx-auto mt-8 px-6">
+    <div id="search-filters-container" class="max-w-6xl mx-auto mt-8 px-6">
       <div class="bg-zinc-800 rounded-xl p-6 shadow-lg">
         <h3 class="text-xl font-bold text-blue-400 mb-4 text-center">
           🎌 Filter & Sort Options 🎌
@@ -206,6 +221,25 @@
     <!-- Favorite anime will be inserted here -->
   </div>
 </div>
+
+<!-- Watchlist Section -->
+<div id="watchlist-section" class="max-w-6xl mx-auto mt-8 px-6 hidden">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+    <h3 class="text-2xl font-bold text-blue-400">📺 My Watchlist</h3>
+    <div class="flex gap-2 text-xs font-semibold">
+      <button id="export-watchlist" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg transition-colors border border-zinc-700 cursor-pointer">
+        📥 Export
+      </button>
+      <button id="import-watchlist" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white rounded-lg transition-colors border border-zinc-700 cursor-pointer">
+        📤 Import
+      </button>
+      <input type="file" id="import-file" class="hidden" accept=".json">
+    </div>
+  </div>
+  <div id="watchlist" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+    <!-- Watchlist anime will be inserted here -->
+  </div>
+</div>
       <!-- Cards will be injected here -->
     </div>
     <div
@@ -216,10 +250,8 @@
     </div>
 
     <!-- Footer -->
-    <footer
-      class="text-center text-zinc-500 py-6 border-t border-zinc-700 mt-10"
-    >
-      Made for weebs with ❤️
+    <footer class="w-full text-center text-gray-300 text-sm py-6 mt-12 border-t border-zinc-800">
+      Made with ❤️ by <span class="text-blue-400 font-bold">Clickify</span>
     </footer>
     <!-- Enhanced Anime Info Modal -->
     <div
@@ -316,7 +348,7 @@
             </div>
 
             <!-- External Links -->
-            <div class="flex gap-4 mt-6">
+            <div class="flex flex-wrap gap-4 mt-6">
               <a
                 id="modal-mal-link"
                 href="#"
@@ -333,7 +365,16 @@
               >
                 Watch Trailer
               </a>
+              <button
+                id="modal-watchlist-btn"
+                class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg text-white text-sm transition-colors border border-zinc-700 cursor-pointer"
+              >
+                + Watchlist
+              </button>
             </div>
+
+            <!-- Watchlist Progress Tracker Controls -->
+            <div id="modal-watchlist-tracker" class="hidden bg-zinc-800 p-4 rounded-lg mt-4 border border-zinc-700"></div>
           </div>
         </div>
       </div>
@@ -355,6 +396,15 @@
       }
     </style>
     <!-- Script -->
-    <script src="anime.js"></script>
+    <script src="updates.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+            .catch(err => console.error('Service Worker registration failed:', err));
+        });
+      }
+    </script>
   </body>
 </html>
