@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Anime Updates | WeebWorld</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://api.jikan.moe; font-src 'self'">
+    <link rel="stylesheet" href="src/style.css">
   </head>
   <body class="bg-zinc-900 text-white font-sans">
     <!-- Navbar -->
@@ -20,9 +21,9 @@
 
     <!-- Heading -->
     <header class="text-center py-12">
-      <h2 class="text-4xl font-bold text-blue-300">📅 Anime Airing Schedule</h2>
-      <p class="text-zinc-400 mt-2">
-        Stay updated on your favorite shows airing this week!
+      <h2 id="page-heading" class="text-4xl font-bold text-blue-300">📅 Seasonal Anime</h2>
+      <p id="page-subheading" class="text-zinc-400 mt-2">
+        Browse your favorite animes by season
       </p>
     </header>
     <!-- Search Box -->
@@ -40,6 +41,15 @@
         Search
       </button>
     </div>
+    <!-- View Mode Tabs -->
+    <div class="max-w-6xl mx-auto mt-6 px-6">
+      <div class="flex flex-wrap gap-2 justify-center">
+        <button id="view-seasonal" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-blue-500 text-white">Seasonal</button>
+        <button id="view-weekly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600">Weekly</button>
+        <button id="view-monthly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600">Monthly</button>
+        <button id="view-yearly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600">Yearly</button>
+      </div>
+    </div>
     <!-- Enhanced Filter Section -->
     <div class="max-w-6xl mx-auto mt-8 px-6">
       <div class="bg-zinc-800 rounded-xl p-6 shadow-lg">
@@ -48,7 +58,7 @@
         </h3>
 
         <!-- Filter Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
           <!-- Genre Filter -->
           <div>
             <label
@@ -119,17 +129,46 @@
               class="block text-sm font-medium text-zinc-300 mb-2"
               >Year</label
             >
-            <select
-              id="year-select"
-              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">All Years</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-              <option value="2021">2021</option>
-              <option value="2020">2020</option>
+              <select
+                id="year-select"
+                class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="">All Years</option>
+              </select>
+          </div>
+
+          <!-- Day Filter (Weekly mode) -->
+          <div id="day-filter" class="hidden">
+            <label for="day-select" class="block text-sm font-medium text-zinc-300 mb-2">Day</label>
+            <select id="day-select" class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <option value="">All Days</option>
+              <option value="monday">Monday</option>
+              <option value="tuesday">Tuesday</option>
+              <option value="wednesday">Wednesday</option>
+              <option value="thursday">Thursday</option>
+              <option value="friday">Friday</option>
+              <option value="saturday">Saturday</option>
+              <option value="sunday">Sunday</option>
+            </select>
+          </div>
+
+          <!-- Month Filter (Monthly mode) -->
+          <div id="month-filter" class="hidden">
+            <label for="month-select" class="block text-sm font-medium text-zinc-300 mb-2">Month</label>
+            <select id="month-select" class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <option value="">All Months</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
             </select>
           </div>
         </div>
@@ -171,42 +210,40 @@
         </div>
       </div>
     </div>
-    <!-- Anime Cards -->
-    <div
-      id="anime-cards"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10 px-6"
-    >
     <!-- Loading Spinner -->
-<div id="loading-spinner" class="flex justify-center items-center py-20 hidden">
-  <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-400"></div>
-</div>
+    <div id="loading-spinner" class="flex justify-center items-center py-20 hidden">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-400"></div>
+    </div>
 
-<!-- No Results Message -->
-<div id="no-results" class="text-center py-20 hidden">
-  <div class="text-6xl mb-4">😢</div>
-  <h3 class="text-2xl font-bold text-zinc-300 mb-2">No Anime Found</h3>
-  <p class="text-zinc-400 mb-4">Try adjusting your filters or search terms</p>
-  <button id="clear-search" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-    Clear Filters
-  </button>
-</div>
-
-<!-- Recently Viewed Section (add this before the footer) -->
-<div id="recently-viewed-section" class="max-w-6xl mx-auto mt-12 px-6 hidden">
-  <h3 class="text-2xl font-bold text-blue-400 mb-4">👁️ Recently Viewed</h3>
-  <div id="recently-viewed" class="flex gap-4 overflow-x-auto pb-4">
-    <!-- Recently viewed anime will be inserted here -->
-  </div>
-</div>
-
-<!-- Favorites Section -->
-<div id="favorites-section" class="max-w-6xl mx-auto mt-8 px-6 hidden">
-  <h3 class="text-2xl font-bold text-pink-400 mb-4">❤️ Your Favorites</h3>
-  <div id="favorites" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-    <!-- Favorite anime will be inserted here -->
-  </div>
-</div>
+    <!-- Anime Cards Grid -->
+    <div id="anime-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10 px-6">
       <!-- Cards will be injected here -->
+    </div>
+
+    <!-- No Results Message -->
+    <div id="no-results" class="text-center py-20 hidden">
+      <div class="text-6xl mb-4">😢</div>
+      <h3 class="text-2xl font-bold text-zinc-300 mb-2">No Anime Found</h3>
+      <p class="text-zinc-400 mb-4">Try adjusting your filters or search terms</p>
+      <button id="clear-search" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+        Clear Filters
+      </button>
+    </div>
+
+    <!-- Recently Viewed Section -->
+    <div id="recently-viewed-section" class="max-w-6xl mx-auto mt-12 px-6 hidden">
+      <h3 class="text-2xl font-bold text-blue-400 mb-4">👁️ Recently Viewed</h3>
+      <div id="recently-viewed" class="flex gap-4 overflow-x-auto pb-4">
+        <!-- Recently viewed anime will be inserted here -->
+      </div>
+    </div>
+
+    <!-- Favorites Section -->
+    <div id="favorites-section" class="max-w-6xl mx-auto mt-8 px-6 hidden">
+      <h3 class="text-2xl font-bold text-pink-400 mb-4">❤️ Your Favorites</h3>
+      <div id="favorites" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <!-- Favorite anime will be inserted here -->
+      </div>
     </div>
     <div
       id="pagination"
@@ -214,6 +251,11 @@
     >
       <!-- Pagination buttons will be injected here -->
     </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scroll-top-btn" class="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg transition-all duration-300 hidden items-center justify-center text-xl z-40">
+      ↑
+    </button>
 
     <!-- Footer -->
     <footer
@@ -355,6 +397,6 @@
       }
     </style>
     <!-- Script -->
-    <script src="anime.js"></script>
+    <script type="module" src="anime.js"></script>
   </body>
 </html>

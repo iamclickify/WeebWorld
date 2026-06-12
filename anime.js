@@ -1,13 +1,18 @@
 // === Enhanced anime.js (secure DOM updates, safer URL handling) ===
-const apiUrl = "https://api.jikan.moe/v4/seasons/now";
-const CACHE_KEY = "jikan_season_now_cache_v1";
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+const ITEMS_PER_PAGE = 9;
+const DEBOUNCE_DELAY = 400;
+const FETCH_TIMEOUT = 12000;
+const RECENTLY_VIEWED_LIMIT = 10;
 
 let currentPage = 1;
 let currentData = [];
 let filteredData = [];
-let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
-let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+let recentlyViewed = safeParse(localStorage.getItem("recentlyViewed"), []);
+let favorites = safeParse(localStorage.getItem("favorites"), []);
+let currentViewMode = "seasonal";
+let savedViewModeRestored = false;
 
 // DOM Elements
 const animeCards = document.getElementById("anime-cards");
@@ -26,6 +31,16 @@ const loadingSpinner = document.getElementById("loading-spinner");
 const noResults = document.getElementById("no-results");
 const modal = document.getElementById("anime-modal");
 const closeModal = document.getElementById("close-modal");
+const daySelect = document.getElementById("day-select");
+const monthSelect = document.getElementById("month-select");
+const dayFilter = document.getElementById("day-filter");
+const monthFilter = document.getElementById("month-filter");
+const viewSeasonal = document.getElementById("view-seasonal");
+const viewWeekly = document.getElementById("view-weekly");
+const viewMonthly = document.getElementById("view-monthly");
+const viewYearly = document.getElementById("view-yearly");
+const pageHeading = document.getElementById("page-heading");
+const pageSubheading = document.getElementById("page-subheading");
 
 // --- Accessibility upgrades (safe if missing) ---
 if (resultsInfo) resultsInfo.setAttribute("aria-live", "polite");
@@ -56,12 +71,28 @@ function scrollToGridTop() {
 }
 
 // Debounce utility
-function debounce(fn, delay = 400) {
+function debounce(fn, delay = DEBOUNCE_DELAY) {
   let t;
   return (...args) => {
     clearTimeout(t);
     t = setTimeout(() => fn(...args), delay);
   };
+}
+
+const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='600' fill='%233f3f46'%3E%3Crect width='400' height='600'/%3E%3Ctext x='200' y='300' text-anchor='middle' fill='%23a1a1aa' font-size='20' font-family='sans-serif'%3ENo Poster%3C/text%3E%3C/svg%3E";
+function setImageFallback(img) {
+  if (!img) return;
+  img.addEventListener("error", () => { img.src = FALLBACK_IMG; img.removeEventListener("error", () => {}); });
+}
+
+function safeParse(value, fallback) {
+  if (value === null || value === undefined || value === "") return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed === null ? fallback : parsed;
+  } catch {
+    return fallback;
+  }
 }
 
 // Persist filters
@@ -73,24 +104,94 @@ function saveFilters() {
     year: yearSelect?.value ?? "",
     sort: sortSelect?.value ?? "default",
     search: searchInput?.value ?? "",
+    viewMode: currentViewMode,
+    day: daySelect?.value ?? "",
+    month: monthSelect?.value ?? "",
   };
   localStorage.setItem("filters", JSON.stringify(filters));
 }
 function loadFilters() {
-  const saved = JSON.parse(localStorage.getItem("filters") || "{}");
+  const saved = safeParse(localStorage.getItem("filters"), {});
   if (saved.genre && genreSelect) genreSelect.value = saved.genre;
   if (saved.status && statusSelect) statusSelect.value = saved.status;
   if (saved.season && seasonSelect) seasonSelect.value = saved.season;
   if (saved.year && yearSelect) yearSelect.value = saved.year;
   if (saved.sort && sortSelect) sortSelect.value = saved.sort;
   if (typeof saved.search === "string" && searchInput) searchInput.value = saved.search;
+  if (saved.viewMode) {
+    setViewMode(saved.viewMode);
+    savedViewModeRestored = true;
+  }
+  if (saved.day && daySelect) daySelect.value = saved.day;
+  if (saved.month && monthSelect) monthSelect.value = saved.month;
+}
+
+function updateFilterVisibility() {
+  const isSeasonal = currentViewMode === "seasonal";
+  const isWeekly = currentViewMode === "weekly";
+  const isMonthly = currentViewMode === "monthly";
+  const isYearly = currentViewMode === "yearly";
+
+  // Season select: visible in seasonal + yearly (for yearly mode it's the season picker)
+  seasonSelect?.closest("div")?.classList.toggle("hidden", !isSeasonal && !isYearly);
+  // Year select: visible in seasonal + monthly + yearly
+  yearSelect?.closest("div")?.classList.toggle("hidden", isWeekly);
+  // Day filter: visible only in weekly mode
+  dayFilter?.classList.toggle("hidden", !isWeekly);
+  // Month filter: visible only in monthly mode
+  monthFilter?.classList.toggle("hidden", !isMonthly);
+}
+
+function setViewMode(mode) {
+  currentViewMode = mode;
+  // update tab styles
+  [viewSeasonal, viewWeekly, viewMonthly, viewYearly].forEach((btn) => {
+    btn?.classList.remove("bg-blue-500", "text-white");
+    btn?.classList.add("bg-zinc-700", "text-zinc-300", "hover:bg-zinc-600");
+  });
+  const activeBtn = { seasonal: viewSeasonal, weekly: viewWeekly, monthly: viewMonthly, yearly: viewYearly }[mode];
+  activeBtn?.classList.remove("bg-zinc-700", "text-zinc-300", "hover:bg-zinc-600");
+  activeBtn?.classList.add("bg-blue-500", "text-white");
+
+  // heading
+  const labels = {
+    seasonal: ["📅 Seasonal Anime", "Browse your favorite animes by season"],
+    weekly: ["📅 Weekly Schedule", "Browse your favorite animes by day"],
+    monthly: ["📅 Monthly Anime", "Browse your favorite animes by month"],
+    yearly: ["📅 Yearly Anime", "Browse your favorite animes by year"],
+  };
+  const [h, s] = labels[mode] || labels.seasonal;
+  if (pageHeading) pageHeading.textContent = h;
+  if (pageSubheading) pageSubheading.textContent = s;
+
+  // yearly: auto-select current year + season if empty
+  if (mode === "yearly") {
+    if (!yearSelect?.value) {
+      const now = new Date();
+      const y = now.getFullYear();
+      if (yearSelect) yearSelect.value = String(y);
+    }
+    if (!seasonSelect?.value) {
+      const m = new Date().getMonth() + 1;
+      let season = "winter";
+      if (m >= 3 && m <= 5) season = "spring";
+      else if (m >= 6 && m <= 8) season = "summer";
+      else if (m >= 9 && m <= 11) season = "fall";
+      if (seasonSelect) seasonSelect.value = season;
+    }
+  }
+
+  updateFilterVisibility();
+  currentPage = 1;
+  fetchAnime();
+  saveFilters();
 }
 
 // Update results info
 function updateResultsInfo() {
   const total = filteredData.length;
-  const startIndex = (currentPage - 1) * 9 + 1;
-  const endIndex = Math.min(currentPage * 9, total);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endIndex = Math.min(currentPage * ITEMS_PER_PAGE, total);
   if (total === 0) {
     resultsInfo.textContent = "No anime found";
   } else {
@@ -183,6 +284,7 @@ function openModal(anime) {
     imgEl.removeAttribute("src");
   }
   imgEl.alt = anime.title || "Anime poster";
+  setImageFallback(imgEl);
 
   document.getElementById("modal-episodes").textContent = anime.episodes || "N/A";
   document.getElementById("modal-score").textContent = anime.score ? `${anime.score}/10` : "N/A";
@@ -273,6 +375,7 @@ function toggleFavorite(anime) {
     });
   }
   localStorage.setItem("favorites", JSON.stringify(favorites));
+  renderFavorites();
 }
 
 // Recently viewed
@@ -284,7 +387,7 @@ function addToRecentlyViewed(anime) {
     image: anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url,
     score: anime.score,
   });
-  recentlyViewed = recentlyViewed.slice(0, 10);
+  recentlyViewed = recentlyViewed.slice(0, RECENTLY_VIEWED_LIMIT);
   localStorage.setItem("recentlyViewed", JSON.stringify(recentlyViewed));
   renderRecentlyViewed();
 }
@@ -312,6 +415,51 @@ function renderRecentlyViewed() {
     img.alt = anime.title || "Poster";
     img.loading = "lazy";
     img.className = "w-full h-20 object-cover rounded mb-2";
+    setImageFallback(img);
+
+    const title = document.createElement("p");
+    title.className = "text-xs text-white font-medium truncate";
+    title.textContent = anime.title;
+
+    const score = document.createElement("p");
+    score.className = "text-xs text-zinc-400";
+    score.textContent = anime.score ? `⭐ ${anime.score}` : "No score";
+
+    card.appendChild(img);
+    card.appendChild(title);
+    card.appendChild(score);
+
+    card.addEventListener("click", () => {
+      const fullAnime = currentData.find((a) => a.mal_id === anime.mal_id);
+      if (fullAnime) openModal(fullAnime);
+    });
+    container.appendChild(card);
+  });
+}
+
+function renderFavorites() {
+  const container = document.getElementById("favorites");
+  const section = document.getElementById("favorites-section");
+  if (!container || !section) return;
+
+  if (favorites.length === 0) {
+    section.classList.add("hidden");
+    return;
+  }
+
+  section.classList.remove("hidden");
+  container.innerHTML = "";
+
+  favorites.forEach((anime) => {
+    const card = document.createElement("div");
+    card.className = "bg-zinc-800 rounded-lg p-2 cursor-pointer hover:bg-zinc-700 transition-colors";
+
+    const img = document.createElement("img");
+    img.src = anime.image || "";
+    img.alt = anime.title || "Poster";
+    img.loading = "lazy";
+    img.className = "w-full h-28 object-cover rounded mb-2";
+    setImageFallback(img);
 
     const title = document.createElement("p");
     title.className = "text-xs text-white font-medium truncate";
@@ -334,14 +482,48 @@ function renderRecentlyViewed() {
 }
 
 // Fetch with timeout + session cache
+function getApiUrl() {
+  if (currentViewMode === "weekly") return "https://api.jikan.moe/v4/schedules";
+  if (currentViewMode === "yearly") {
+    const season = seasonSelect?.value || "";
+    const year = yearSelect?.value || "";
+    if (season && year) return `https://api.jikan.moe/v4/seasons/${year}/${season}`;
+    return null;
+  }
+  return "https://api.jikan.moe/v4/seasons/now";
+}
+
+function getCacheKey() {
+  if (currentViewMode === "weekly") return "jikan_schedule_cache_v1";
+  if (currentViewMode === "yearly") {
+    const season = seasonSelect?.value || "";
+    const year = yearSelect?.value || "";
+    if (season && year) return `jikan_season_${year}_${season}_cache_v1`;
+  }
+  return "jikan_season_now_cache_v1";
+}
+
 async function fetchAnime() {
   try {
     showLoading();
+    const url = getApiUrl();
+    if (!url) {
+      if (animeCards) {
+        animeCards.innerHTML = "";
+        const msg = document.createElement("p");
+        msg.className = "text-zinc-400 text-center py-10";
+        msg.textContent = "Select a year and season to browse.";
+        animeCards.appendChild(msg);
+      }
+      hideLoading();
+      return;
+    }
+    const cacheKey = getCacheKey();
 
     // session cache
-    const cachedRaw = sessionStorage.getItem(CACHE_KEY);
+    const cachedRaw = sessionStorage.getItem(cacheKey);
     if (cachedRaw) {
-      const cached = JSON.parse(cachedRaw);
+      const cached = safeParse(cachedRaw, {});
       if (Date.now() - cached.time < CACHE_TTL && Array.isArray(cached.data)) {
         currentData = cached.data;
         applyFilters();
@@ -352,9 +534,9 @@ async function fetchAnime() {
     }
 
     const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 12000); // 12s timeout
+    const t = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-    const response = await fetch(apiUrl, { signal: controller.signal });
+    const response = await fetch(url, { signal: controller.signal });
     clearTimeout(t);
 
     if (!response.ok) throw new Error("Network response was not ok");
@@ -363,7 +545,7 @@ async function fetchAnime() {
 
     // save cache
     sessionStorage.setItem(
-      CACHE_KEY,
+      cacheKey,
       JSON.stringify({ time: Date.now(), data: currentData })
     );
 
@@ -371,7 +553,6 @@ async function fetchAnime() {
     renderRecentlyViewed();
   } catch (error) {
     hideLoading();
-    // Build a safe error UI without innerHTML
     if (animeCards) {
       animeCards.innerHTML = "";
       const container = document.createElement("div");
@@ -404,6 +585,8 @@ function applyFilters() {
   const selectedYear = yearSelect?.value ?? "";
   const selectedSort = sortSelect?.value ?? "default";
   const searchText = (searchInput?.value || "").toLowerCase();
+  const selectedDay = daySelect?.value ?? "";
+  const selectedMonth = monthSelect?.value ?? "";
 
   filteredData = (currentData || []).filter((anime) => {
     const matchesGenre =
@@ -422,7 +605,20 @@ function applyFilters() {
     const titleEn = (anime.title_english || "").toLowerCase();
     const matchesSearch = title.includes(searchText) || titleEn.includes(searchText);
 
-    return matchesGenre && matchesStatus && matchesSeason && matchesYear && matchesSearch;
+    let matchesDay = true;
+    if (selectedDay && anime.broadcast?.day) {
+      matchesDay = anime.broadcast.day.toLowerCase().includes(selectedDay.toLowerCase());
+    }
+
+    let matchesMonth = true;
+    if (selectedMonth && anime.aired?.from) {
+      const d = new Date(anime.aired.from);
+      if (!isNaN(d.getTime())) {
+        matchesMonth = String(d.getMonth() + 1) === selectedMonth;
+      }
+    }
+
+    return matchesGenre && matchesStatus && matchesSeason && matchesYear && matchesSearch && matchesDay && matchesMonth;
   });
 
   if (selectedSort !== "default") {
@@ -452,8 +648,8 @@ function applyFilters() {
 function renderAnime() {
   if (!animeCards) return;
   animeCards.innerHTML = "";
-  const startIndex = (currentPage - 1) * 9;
-  const pageData = filteredData.slice(startIndex, startIndex + 9);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const pageData = filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   if (pageData.length === 0) {
     noResults?.classList.remove("hidden");
@@ -480,6 +676,7 @@ function renderAnime() {
     img.className = "w-full h-60 object-cover rounded mb-3 transition-opacity duration-300";
     img.style.opacity = "0";
     img.addEventListener("load", () => { img.style.opacity = "1"; });
+    setImageFallback(img);
 
     const scoreBadge = document.createElement("div");
     scoreBadge.className = "absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs";
@@ -510,10 +707,18 @@ function renderAnime() {
   });
 }
 
+function goToPage(page) {
+  currentPage = page;
+  renderAnime();
+  renderPagination();
+  updateResultsInfo();
+  scrollToGridTop();
+}
+
 function renderPagination() {
   if (!pagination) return;
   pagination.innerHTML = "";
-  const totalPages = Math.ceil(filteredData.length / 9);
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   if (totalPages <= 1) return;
 
   if (currentPage > 1) {
@@ -521,13 +726,7 @@ function renderPagination() {
     prevBtn.textContent = "← Previous";
     prevBtn.className =
       "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors";
-    prevBtn.addEventListener("click", () => {
-      currentPage--;
-      renderAnime();
-      renderPagination();
-      updateResultsInfo();
-      scrollToGridTop();
-    });
+    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
     pagination.appendChild(prevBtn);
   }
 
@@ -540,13 +739,7 @@ function renderPagination() {
     btn.className = `px-3 py-2 rounded-md transition-colors ${
       i === currentPage ? "bg-blue-500 text-white" : "bg-zinc-700 text-zinc-300 hover:bg-blue-400"
     }`;
-    btn.addEventListener("click", () => {
-      currentPage = i;
-      renderAnime();
-      renderPagination();
-      updateResultsInfo();
-      scrollToGridTop();
-    });
+    btn.addEventListener("click", () => goToPage(i));
     pagination.appendChild(btn);
   }
 
@@ -555,13 +748,7 @@ function renderPagination() {
     nextBtn.textContent = "Next →";
     nextBtn.className =
       "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors";
-    nextBtn.addEventListener("click", () => {
-      currentPage++;
-      renderAnime();
-      renderPagination();
-      updateResultsInfo();
-      scrollToGridTop();
-    });
+    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
     pagination.appendChild(nextBtn);
   }
 }
@@ -574,6 +761,8 @@ function clearAllFilters() {
   if (yearSelect) yearSelect.value = "";
   if (sortSelect) sortSelect.value = "default";
   if (searchInput) searchInput.value = "";
+  if (daySelect) daySelect.value = "";
+  if (monthSelect) monthSelect.value = "";
   currentPage = 1;
   applyFilters();
 }
@@ -581,8 +770,16 @@ function clearAllFilters() {
 // Event Listeners
 genreSelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
 statusSelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
-seasonSelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
-yearSelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
+seasonSelect?.addEventListener("change", () => {
+  currentPage = 1;
+  if (currentViewMode === "yearly") fetchAnime();
+  else applyFilters();
+});
+yearSelect?.addEventListener("change", () => {
+  currentPage = 1;
+  if (currentViewMode === "yearly") fetchAnime();
+  else applyFilters();
+});
 sortSelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
 
 searchButton?.addEventListener("click", () => { currentPage = 1; applyFilters(); });
@@ -590,7 +787,7 @@ searchInput?.addEventListener("keydown", (e) => {
   if (e.key === "Enter") { currentPage = 1; applyFilters(); }
 });
 // Debounced live search
-const debouncedSearch = debounce(() => { currentPage = 1; applyFilters(); }, 400);
+const debouncedSearch = debounce(() => { currentPage = 1; applyFilters(); }, DEBOUNCE_DELAY);
 searchInput?.addEventListener("input", debouncedSearch);
 
 clearFiltersBtn?.addEventListener("click", clearAllFilters);
@@ -601,6 +798,43 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModalFn();
 });
 
+// View Mode Tabs
+viewSeasonal?.addEventListener("click", () => setViewMode("seasonal"));
+viewWeekly?.addEventListener("click", () => setViewMode("weekly"));
+viewMonthly?.addEventListener("click", () => setViewMode("monthly"));
+viewYearly?.addEventListener("click", () => setViewMode("yearly"));
+
+// Day / Month filters
+daySelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
+monthSelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
+
+// Scroll to top
+const scrollTopBtn = document.getElementById("scroll-top-btn");
+if (scrollTopBtn) {
+  window.addEventListener("scroll", () => {
+    scrollTopBtn.classList.toggle("hidden", window.scrollY < 400);
+  });
+  scrollTopBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+// Populate year filter with dynamic range
+function populateYearFilter() {
+  const yearSelect = document.getElementById("year-select");
+  if (!yearSelect) return;
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= 1970; y--) {
+    const opt = document.createElement("option");
+    opt.value = String(y);
+    opt.textContent = String(y);
+    yearSelect.appendChild(opt);
+  }
+}
+
 // Initialize
+populateYearFilter();
 loadFilters();
-fetchAnime();
+renderFavorites();
+renderRecentlyViewed();
+if (!savedViewModeRestored) fetchAnime();

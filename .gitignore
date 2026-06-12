@@ -32,3 +32,8 @@ npm-debug.log*
 # Temp
 .tmp/
 .temp/
+
+# Planning Notes
+Analysis.md
+SECURITY.md
+roadmap.md
