@@ -3,7 +3,7 @@ const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 const ITEMS_PER_PAGE = 9;
 const DEBOUNCE_DELAY = 400;
-const FETCH_TIMEOUT = 12000;
+const FETCH_TIMEOUT = 30000;
 const RECENTLY_VIEWED_LIMIT = 10;
 
 let currentPage = 1;
@@ -165,14 +165,17 @@ function updateFilterVisibility() {
 
 function setViewMode(mode) {
   currentViewMode = mode;
-  // update tab styles
+  const inactiveDark = ["bg-zinc-700", "text-zinc-300", "hover:bg-zinc-600"];
+  const inactiveLight = ["light:bg-zinc-200", "light:text-zinc-700", "light:hover:bg-zinc-300"];
+  const activeDark = ["bg-blue-500", "text-white"];
+  const activeLight = ["light:bg-blue-600", "light:text-white"];
   [viewSeasonal, viewWeekly, viewMonthly, viewTop, viewYearly].forEach((btn) => {
-    btn?.classList.remove("bg-blue-500", "text-white");
-    btn?.classList.add("bg-zinc-700", "text-zinc-300", "hover:bg-zinc-600");
+    btn?.classList.remove(...activeDark, ...activeLight);
+    btn?.classList.add(...inactiveDark, ...inactiveLight);
   });
   const activeBtn = { seasonal: viewSeasonal, weekly: viewWeekly, monthly: viewMonthly, yearly: viewYearly, top: viewTop }[mode];
-  activeBtn?.classList.remove("bg-zinc-700", "text-zinc-300", "hover:bg-zinc-600");
-  activeBtn?.classList.add("bg-blue-500", "text-white");
+  activeBtn?.classList.remove(...inactiveDark, ...inactiveLight);
+  activeBtn?.classList.add(...activeDark, ...activeLight);
 
   // heading
   const labels = {
@@ -328,7 +331,7 @@ function openModal(anime) {
     });
   } else {
     const span = document.createElement("span");
-    span.className = "text-zinc-400";
+    span.className = "text-zinc-400 light:text-zinc-500";
     span.textContent = "No genres available";
     genresContainer.appendChild(span);
   }
@@ -497,7 +500,7 @@ function renderRecentlyViewed() {
   recentlyViewed.forEach((anime) => {
     const card = document.createElement("div");
     card.className =
-      "flex-shrink-0 bg-zinc-800 rounded-lg p-2 cursor-pointer hover:bg-zinc-700 transition-colors w-32";
+      "flex-shrink-0 bg-zinc-800 rounded-lg p-2 cursor-pointer hover:bg-zinc-700 transition-colors w-32 light:bg-zinc-100 light:hover:bg-zinc-200";
 
     const img = document.createElement("img");
     img.src = anime.image || "";
@@ -507,11 +510,11 @@ function renderRecentlyViewed() {
     setImageFallback(img);
 
     const title = document.createElement("p");
-    title.className = "text-xs text-white font-medium truncate";
+    title.className = "text-xs text-white font-medium truncate light:text-zinc-800";
     title.textContent = anime.title;
 
     const score = document.createElement("p");
-    score.className = "text-xs text-zinc-400";
+    score.className = "text-xs text-zinc-400 light:text-zinc-500";
     score.textContent = anime.score ? `⭐ ${anime.score}` : "No score";
 
     card.appendChild(img);
@@ -541,7 +544,7 @@ function renderFavorites() {
 
   favorites.forEach((anime) => {
     const card = document.createElement("div");
-    card.className = "bg-zinc-800 rounded-lg p-2 cursor-pointer hover:bg-zinc-700 transition-colors";
+    card.className = "bg-zinc-800 rounded-lg p-2 cursor-pointer hover:bg-zinc-700 transition-colors light:bg-zinc-100 light:hover:bg-zinc-200";
 
     const img = document.createElement("img");
     img.src = anime.image || "";
@@ -551,11 +554,11 @@ function renderFavorites() {
     setImageFallback(img);
 
     const title = document.createElement("p");
-    title.className = "text-xs text-white font-medium truncate";
+    title.className = "text-xs text-white font-medium truncate light:text-zinc-800";
     title.textContent = anime.title;
 
     const score = document.createElement("p");
-    score.className = "text-xs text-zinc-400";
+    score.className = "text-xs text-zinc-400 light:text-zinc-500";
     score.textContent = anime.score ? `⭐ ${anime.score}` : "No score";
 
     card.appendChild(img);
@@ -602,7 +605,7 @@ async function fetchAnime() {
       if (animeCards) {
         animeCards.innerHTML = "";
         const msg = document.createElement("p");
-        msg.className = "text-zinc-400 text-center py-10";
+        msg.className = "text-zinc-400 text-center py-10 light:text-zinc-500";
         msg.textContent = "Select a year and season to browse.";
         animeCards.appendChild(msg);
       }
@@ -647,7 +650,7 @@ async function fetchAnime() {
     if (animeCards) {
       animeCards.innerHTML = "";
       const container = document.createElement("div");
-      container.className = "text-center py-10 text-zinc-300";
+      container.className = "text-center py-10 text-zinc-300 light:text-zinc-600";
 
       const msg = document.createElement("p");
       msg.className = "text-red-500 mb-4";
@@ -754,7 +757,7 @@ function renderAnime() {
   pageData.forEach((anime) => {
     const card = document.createElement("div");
     card.className =
-      "bg-zinc-800 p-4 rounded-xl shadow-lg hover:shadow-blue-400 hover:scale-105 transition-all duration-300 cursor-pointer relative";
+      "bg-zinc-800 p-4 rounded-xl shadow-lg hover:shadow-blue-400 hover:scale-105 transition-all duration-300 cursor-pointer relative light:bg-white light:shadow-gray-200 light:hover:shadow-blue-300";
 
     // Image wrapper
     const imgWrapper = document.createElement("div");
@@ -770,22 +773,22 @@ function renderAnime() {
     setImageFallback(img);
 
     const scoreBadge = document.createElement("div");
-    scoreBadge.className = "absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs";
+    scoreBadge.className = "absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs light:bg-white light:bg-opacity-80 light:text-zinc-800 light:shadow";
     scoreBadge.textContent = anime.score ? `⭐ ${anime.score}` : "No score";
 
     imgWrapper.appendChild(img);
     imgWrapper.appendChild(scoreBadge);
 
     const titleEl = document.createElement("h3");
-    titleEl.className = "text-lg font-bold text-blue-400 mb-1 line-clamp-2";
+    titleEl.className = "text-lg font-bold text-blue-400 mb-1 line-clamp-2 light:text-blue-600";
     titleEl.textContent = anime.title || "Untitled";
 
     const eps = document.createElement("p");
-    eps.className = "text-sm text-zinc-400";
+    eps.className = "text-sm text-zinc-400 light:text-zinc-500";
     eps.textContent = `Episodes: ${anime.episodes ?? "N/A"}`;
 
     const status = document.createElement("p");
-    status.className = "text-sm text-zinc-400";
+    status.className = "text-sm text-zinc-400 light:text-zinc-500";
     status.textContent = `Status: ${anime.status || "N/A"}`;
 
     card.appendChild(imgWrapper);
@@ -816,7 +819,7 @@ function renderPagination() {
     const prevBtn = document.createElement("button");
     prevBtn.textContent = "← Previous";
     prevBtn.className =
-      "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors";
+      "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white";
     prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
     pagination.appendChild(prevBtn);
   }
@@ -828,7 +831,9 @@ function renderPagination() {
     const btn = document.createElement("button");
     btn.textContent = i;
     btn.className = `px-3 py-2 rounded-md transition-colors ${
-      i === currentPage ? "bg-blue-500 text-white" : "bg-zinc-700 text-zinc-300 hover:bg-blue-400"
+      i === currentPage
+        ? "bg-blue-500 text-white light:bg-blue-600"
+        : "bg-zinc-700 text-zinc-300 hover:bg-blue-400 light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white"
     }`;
     btn.addEventListener("click", () => goToPage(i));
     pagination.appendChild(btn);
@@ -838,7 +843,7 @@ function renderPagination() {
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "Next →";
     nextBtn.className =
-      "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors";
+      "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white";
     nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
     pagination.appendChild(nextBtn);
   }
