@@ -7,22 +7,25 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://api.jikan.moe; font-src 'self'">
     <link rel="stylesheet" href="src/style.css">
   </head>
-  <body class="bg-zinc-900 text-white font-sans">
+  <body class="bg-zinc-900 text-white font-sans light:bg-white light:text-zinc-900 transition-colors duration-200">
     <!-- Navbar -->
-    <nav class="bg-zinc-800 p-4 shadow-md flex justify-between items-center px-6 py-4 z-50">
+    <nav class="bg-zinc-800 p-4 shadow-md flex justify-between items-center px-6 py-4 z-50 light:bg-zinc-100">
       <h1 class="text-2xl font-extrabold text-blue-400"><a href="index.html">WeebWorld</a> 🌸</h1>
-      <ul class="flex gap-6">
-        <li><a href="index.html" class="hover:text-blue-300">Home</a></li>
+      <ul class="flex gap-6 items-center">
+        <li><a href="index.html" class="hover:text-blue-300 light:hover:text-blue-600">Home</a></li>
         <li>
-          <a href="updates.html" class="text-blue-300 font-semibold">Updates</a>
+          <a href="updates.html" class="text-blue-300 font-semibold light:text-blue-600">Updates</a>
+        </li>
+        <li>
+          <button id="theme-toggle" class="text-xl hover:text-blue-300 light:hover:text-blue-600 transition-colors" aria-label="Toggle theme">☀️</button>
         </li>
       </ul>
     </nav>
 
     <!-- Heading -->
     <header class="text-center py-12">
-      <h2 id="page-heading" class="text-4xl font-bold text-blue-300">📅 Seasonal Anime</h2>
-      <p id="page-subheading" class="text-zinc-400 mt-2">
+      <h2 id="page-heading" class="text-4xl font-bold text-blue-300 light:text-blue-600">📅 Seasonal Anime</h2>
+      <p id="page-subheading" class="text-zinc-400 mt-2 light:text-zinc-500">
         Browse your favorite animes by season
       </p>
     </header>
@@ -32,7 +35,7 @@
         type="text"
         id="search-input"
         placeholder="Search anime..."
-        class="bg-zinc-800 text-white px-4 py-2 rounded-l-lg border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 w-64"
+        class="bg-zinc-800 text-white px-4 py-2 rounded-l-lg border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 w-64 light:bg-white light:text-zinc-900 light:border-zinc-300"
       />
       <button
         id="search-button"
@@ -44,16 +47,17 @@
     <!-- View Mode Tabs -->
     <div class="max-w-6xl mx-auto mt-6 px-6">
       <div class="flex flex-wrap gap-2 justify-center">
-        <button id="view-seasonal" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-blue-500 text-white">Seasonal</button>
-        <button id="view-weekly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600">Weekly</button>
-        <button id="view-monthly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600">Monthly</button>
-        <button id="view-yearly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600">Yearly</button>
+        <button id="view-seasonal" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-blue-500 text-white light:bg-blue-600 light:text-white">Seasonal</button>
+        <button id="view-weekly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600 light:bg-zinc-200 light:text-zinc-700 light:hover:bg-zinc-300">Weekly</button>
+        <button id="view-monthly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600 light:bg-zinc-200 light:text-zinc-700 light:hover:bg-zinc-300">Monthly</button>
+        <button id="view-top" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600 light:bg-zinc-200 light:text-zinc-700 light:hover:bg-zinc-300">Top</button>
+        <button id="view-yearly" class="px-4 py-2 rounded-lg font-semibold transition-colors bg-zinc-700 text-zinc-300 hover:bg-zinc-600 light:bg-zinc-200 light:text-zinc-700 light:hover:bg-zinc-300">Yearly</button>
       </div>
     </div>
     <!-- Enhanced Filter Section -->
     <div id="search-filters-container" class="max-w-6xl mx-auto mt-8 px-6">
-      <div class="bg-zinc-800 rounded-xl p-6 shadow-lg">
-        <h3 class="text-xl font-bold text-blue-400 mb-4 text-center">
+      <div class="bg-zinc-800 rounded-xl p-6 shadow-lg light:bg-zinc-100 light:border light:border-zinc-200">
+        <h3 class="text-xl font-bold text-blue-400 mb-4 text-center light:text-blue-600">
           🎌 Filter & Sort Options 🎌
         </h3>
 
@@ -63,12 +67,12 @@
           <div>
             <label
               for="genre-select"
-              class="block text-sm font-medium text-zinc-300 mb-2"
+              class="block text-sm font-medium text-zinc-300 mb-2 light:text-zinc-700"
               >Genre</label
             >
             <select
               id="genre-select"
-              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 light:bg-white light:text-zinc-900 light:border-zinc-300"
             >
               <option value="all">All Genres</option>
               <option value="1">Action</option>
@@ -89,12 +93,12 @@
           <div>
             <label
               for="status-select"
-              class="block text-sm font-medium text-zinc-300 mb-2"
+              class="block text-sm font-medium text-zinc-300 mb-2 light:text-zinc-700"
               >Status</label
             >
             <select
               id="status-select"
-              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 light:bg-white light:text-zinc-900 light:border-zinc-300"
             >
               <option value="">All Status</option>
               <option value="airing">Currently Airing</option>
@@ -107,12 +111,12 @@
           <div>
             <label
               for="season-select"
-              class="block text-sm font-medium text-zinc-300 mb-2"
+              class="block text-sm font-medium text-zinc-300 mb-2 light:text-zinc-700"
               >Season</label
             >
             <select
               id="season-select"
-              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 light:bg-white light:text-zinc-900 light:border-zinc-300"
             >
               <option value="">All Seasons</option>
               <option value="winter">Winter</option>
@@ -126,12 +130,12 @@
           <div>
             <label
               for="year-select"
-              class="block text-sm font-medium text-zinc-300 mb-2"
+              class="block text-sm font-medium text-zinc-300 mb-2 light:text-zinc-700"
               >Year</label
             >
               <select
                 id="year-select"
-                class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 light:bg-white light:text-zinc-900 light:border-zinc-300"
               >
                 <option value="">All Years</option>
               </select>
@@ -139,8 +143,8 @@
 
           <!-- Day Filter (Weekly mode) -->
           <div id="day-filter" class="hidden">
-            <label for="day-select" class="block text-sm font-medium text-zinc-300 mb-2">Day</label>
-            <select id="day-select" class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <label for="day-select" class="block text-sm font-medium text-zinc-300 mb-2 light:text-zinc-700">Day</label>
+            <select id="day-select" class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 light:bg-white light:text-zinc-900 light:border-zinc-300">
               <option value="">All Days</option>
               <option value="monday">Monday</option>
               <option value="tuesday">Tuesday</option>
@@ -154,8 +158,8 @@
 
           <!-- Month Filter (Monthly mode) -->
           <div id="month-filter" class="hidden">
-            <label for="month-select" class="block text-sm font-medium text-zinc-300 mb-2">Month</label>
-            <select id="month-select" class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <label for="month-select" class="block text-sm font-medium text-zinc-300 mb-2 light:text-zinc-700">Month</label>
+            <select id="month-select" class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 light:bg-white light:text-zinc-900 light:border-zinc-300">
               <option value="">All Months</option>
               <option value="1">January</option>
               <option value="2">February</option>
@@ -178,12 +182,12 @@
           <div>
             <label
               for="sort-select"
-              class="block text-sm font-medium text-zinc-300 mb-2"
+              class="block text-sm font-medium text-zinc-300 mb-2 light:text-zinc-700"
               >Sort By</label
             >
             <select
               id="sort-select"
-              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-full bg-zinc-900 text-white p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 light:bg-white light:text-zinc-900 light:border-zinc-300"
             >
               <option value="default">Default</option>
               <option value="title">Title (A-Z)</option>
@@ -205,7 +209,7 @@
         </div>
 
         <!-- Results Info -->
-        <div id="results-info" class="text-center text-zinc-400 text-sm mt-4">
+        <div id="results-info" class="text-center text-zinc-400 text-sm mt-4 light:text-zinc-500">
           Loading anime...
         </div>
       </div>
@@ -223,8 +227,8 @@
     <!-- No Results Message -->
     <div id="no-results" class="text-center py-20 hidden">
       <div class="text-6xl mb-4">😢</div>
-      <h3 class="text-2xl font-bold text-zinc-300 mb-2">No Anime Found</h3>
-      <p class="text-zinc-400 mb-4">Try adjusting your filters or search terms</p>
+      <h3 class="text-2xl font-bold text-zinc-300 mb-2 light:text-zinc-700">No Anime Found</h3>
+      <p class="text-zinc-400 mb-4 light:text-zinc-500">Try adjusting your filters or search terms</p>
       <button id="clear-search" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
         Clear Filters
       </button>
@@ -232,7 +236,7 @@
 
     <!-- Recently Viewed Section -->
     <div id="recently-viewed-section" class="max-w-6xl mx-auto mt-12 px-6 hidden">
-      <h3 class="text-2xl font-bold text-blue-400 mb-4">👁️ Recently Viewed</h3>
+      <h3 class="text-2xl font-bold text-blue-400 mb-4 light:text-blue-600">👁️ Recently Viewed</h3>
       <div id="recently-viewed" class="flex gap-4 overflow-x-auto pb-4">
         <!-- Recently viewed anime will be inserted here -->
       </div>
@@ -260,8 +264,8 @@
     </button>
 
     <!-- Footer -->
-    <footer class="w-full text-center text-gray-300 text-sm py-6 mt-12 border-t border-zinc-800">
-      Made with ❤️ by <span class="text-blue-400 font-bold">Clickify</span>
+    <footer class="w-full text-center text-gray-300 text-sm py-6 mt-12 border-t border-zinc-800 light:text-zinc-500 light:bg-zinc-50 light:border-zinc-200">
+      Made with ❤️ by <span class="text-blue-400 font-bold light:text-blue-600">Clickify</span>
     </footer>
     <!-- Enhanced Anime Info Modal -->
     <div
@@ -269,11 +273,11 @@
       class="fixed inset-0 bg-black bg-opacity-60 hidden justify-center items-center z-50"
     >
       <div
-        class="bg-zinc-900 p-6 rounded-xl w-11/12 max-w-4xl shadow-lg relative max-h-[90vh] overflow-y-auto"
+        class="bg-zinc-900 p-6 rounded-xl w-11/12 max-w-4xl shadow-lg relative max-h-[90vh] overflow-y-auto light:bg-white light:text-zinc-900"
       >
         <button
           id="close-modal"
-          class="absolute top-4 right-4 text-white text-2xl hover:text-red-400 z-10"
+          class="absolute top-4 right-4 text-white text-2xl hover:text-red-400 z-10 light:text-zinc-900"
         >
           &times;
         </button>
@@ -288,34 +292,34 @@
               src=""
               alt="Anime Image"
             />
-            <div class="bg-zinc-800 p-4 rounded-lg">
-              <h3 class="text-lg font-semibold text-blue-400 mb-2">
+            <div class="bg-zinc-800 p-4 rounded-lg light:bg-zinc-100 light:border light:border-zinc-200">
+              <h3 class="text-lg font-semibold text-blue-400 mb-2 light:text-blue-600">
                 Quick Info
               </h3>
               <div class="space-y-2 text-sm">
                 <p>
-                  <span class="text-zinc-400">Episodes:</span>
-                  <span id="modal-episodes" class="text-white"></span>
+                  <span class="text-zinc-400 light:text-zinc-500">Episodes:</span>
+                  <span id="modal-episodes" class="text-white light:text-zinc-900"></span>
                 </p>
                 <p>
-                  <span class="text-zinc-400">Score:</span>
-                  <span id="modal-score" class="text-white"></span>
+                  <span class="text-zinc-400 light:text-zinc-500">Score:</span>
+                  <span id="modal-score" class="text-white light:text-zinc-900"></span>
                 </p>
                 <p>
-                  <span class="text-zinc-400">Status:</span>
-                  <span id="modal-status" class="text-white"></span>
+                  <span class="text-zinc-400 light:text-zinc-500">Status:</span>
+                  <span id="modal-status" class="text-white light:text-zinc-900"></span>
                 </p>
                 <p>
-                  <span class="text-zinc-400">Aired:</span>
-                  <span id="modal-aired" class="text-white"></span>
+                  <span class="text-zinc-400 light:text-zinc-500">Aired:</span>
+                  <span id="modal-aired" class="text-white light:text-zinc-900"></span>
                 </p>
                 <p>
-                  <span class="text-zinc-400">Duration:</span>
-                  <span id="modal-duration" class="text-white"></span>
+                  <span class="text-zinc-400 light:text-zinc-500">Duration:</span>
+                  <span id="modal-duration" class="text-white light:text-zinc-900"></span>
                 </p>
                 <p>
-                  <span class="text-zinc-400">Rating:</span>
-                  <span id="modal-rating" class="text-white"></span>
+                  <span class="text-zinc-400 light:text-zinc-500">Rating:</span>
+                  <span id="modal-rating" class="text-white light:text-zinc-900"></span>
                 </p>
               </div>
             </div>
@@ -325,35 +329,41 @@
           <div class="lg:w-2/3">
             <h2
               id="modal-title"
-              class="text-3xl font-bold mb-2 text-blue-300"
+              class="text-3xl font-bold mb-2 text-blue-300 light:text-blue-600"
             ></h2>
-            <p id="modal-title-english" class="text-lg text-zinc-400 mb-4"></p>
+            <p id="modal-title-english" class="text-lg text-zinc-400 mb-4 light:text-zinc-500"></p>
 
             <!-- Genres -->
             <div class="mb-4">
-              <h3 class="text-lg font-semibold text-blue-400 mb-2">Genres</h3>
+              <h3 class="text-lg font-semibold text-blue-400 mb-2 light:text-blue-600">Genres</h3>
               <div id="modal-genres" class="flex flex-wrap gap-2"></div>
             </div>
 
             <!-- Synopsis -->
             <div class="mb-4">
-              <h3 class="text-lg font-semibold text-blue-400 mb-2">Synopsis</h3>
-              <p id="modal-synopsis" class="text-zinc-300 leading-relaxed"></p>
+              <h3 class="text-lg font-semibold text-blue-400 mb-2 light:text-blue-600">Synopsis</h3>
+              <p id="modal-synopsis" class="text-zinc-300 leading-relaxed light:text-zinc-700"></p>
+            </div>
+
+            <!-- Recommendations -->
+            <div id="modal-recommendations-section" class="mb-4 hidden">
+              <h3 class="text-lg font-semibold text-blue-400 mb-2 light:text-blue-600">You May Also Like</h3>
+              <div id="modal-recommendations" class="flex gap-3 overflow-x-auto pb-2"></div>
             </div>
 
             <!-- Studios and Producers -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <h3 class="text-lg font-semibold text-blue-400 mb-2">
+                <h3 class="text-lg font-semibold text-blue-400 mb-2 light:text-blue-600">
                   Studios
                 </h3>
-                <div id="modal-studios" class="text-sm text-zinc-300"></div>
+                <div id="modal-studios" class="text-sm text-zinc-300 light:text-zinc-700"></div>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-blue-400 mb-2">
+                <h3 class="text-lg font-semibold text-blue-400 mb-2 light:text-blue-600">
                   Producers
                 </h3>
-                <div id="modal-producers" class="text-sm text-zinc-300"></div>
+                <div id="modal-producers" class="text-sm text-zinc-300 light:text-zinc-700"></div>
               </div>
             </div>
 
