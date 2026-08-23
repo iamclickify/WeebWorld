@@ -1,2 +1,16 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
+
 @custom-variant light (&:where(.light, .light *));
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Dark mode: charcoal-ish gray scale */
+  --color-coal-600: #47474f;
+  --color-coal-700: #38383f;
+  --color-coal-800: #2b2b31;
+  --color-coal-900: #202024;
+  /* Light mode: off-white */
+  --color-offwhite: #f8f4ef;
+}

@@ -42,7 +42,6 @@ const viewYearly = document.getElementById("view-yearly");
 const viewTop = document.getElementById("view-top");
 const pageHeading = document.getElementById("page-heading");
 const pageSubheading = document.getElementById("page-subheading");
-const themeToggle = document.getElementById("theme-toggle");
 
 // --- Accessibility upgrades (safe if missing) ---
 if (resultsInfo) resultsInfo.setAttribute("aria-live", "polite");
@@ -97,24 +96,6 @@ function safeParse(value, fallback) {
   }
 }
 
-// Theme toggle
-function setTheme(mode) {
-  const html = document.documentElement;
-  if (mode === "light") {
-    html.classList.add("light");
-    if (themeToggle) themeToggle.textContent = "🌙";
-  } else {
-    html.classList.remove("light");
-    if (themeToggle) themeToggle.textContent = "☀️";
-  }
-  localStorage.setItem("theme", mode);
-}
-
-function toggleTheme() {
-  const isLight = document.documentElement.classList.contains("light");
-  setTheme(isLight ? "dark" : "light");
-}
-
 // Persist filters
 function saveFilters() {
   const filters = {
@@ -165,7 +146,7 @@ function updateFilterVisibility() {
 
 function setViewMode(mode) {
   currentViewMode = mode;
-  const inactiveDark = ["bg-zinc-700", "text-zinc-300", "hover:bg-zinc-600"];
+  const inactiveDark = ["bg-coal-700", "text-zinc-300", "hover:bg-coal-600"];
   const inactiveLight = ["light:bg-zinc-200", "light:text-zinc-700", "light:hover:bg-zinc-300"];
   const activeDark = ["bg-blue-500", "text-white"];
   const activeLight = ["light:bg-blue-600", "light:text-white"];
@@ -179,11 +160,11 @@ function setViewMode(mode) {
 
   // heading
   const labels = {
-    seasonal: ["📅 Seasonal Anime", "Browse your favorite animes by season"],
-    weekly: ["📅 Weekly Schedule", "Browse your favorite animes by day"],
-    monthly: ["📅 Monthly Anime", "Browse your favorite animes by month"],
-    yearly: ["📅 Yearly Anime", "Browse your favorite animes by year"],
-    top: ["🏆 Top Anime", "Browse the highest rated anime"],
+    seasonal: ["Seasonal Anime", "Browse your favorite animes by season"],
+    weekly: ["Weekly Schedule", "Browse your favorite animes by day"],
+    monthly: ["Monthly Anime", "Browse your favorite animes by month"],
+    yearly: ["Yearly Anime", "Browse your favorite animes by year"],
+    top: ["Top Anime", "Browse the highest rated anime"],
   };
   const [h, s] = labels[mode] || labels.seasonal;
   if (pageHeading) pageHeading.textContent = h;
@@ -239,7 +220,7 @@ function setUpFavButton(anime) {
   if (!favBtn) return; // gracefully skip if cannot place
 
   const isFav = favorites.some((f) => f.mal_id === anime.mal_id);
-  favBtn.textContent = isFav ? "♥ Favorited" : "♡ Favorite";
+  favBtn.textContent = isFav ? "Favorited" : "Favorite";
   favBtn.setAttribute("aria-pressed", String(isFav));
   favBtn.onclick = () => {
     toggleFavorite(anime);
@@ -500,7 +481,7 @@ function renderRecentlyViewed() {
   recentlyViewed.forEach((anime) => {
     const card = document.createElement("div");
     card.className =
-      "flex-shrink-0 bg-zinc-800 rounded-lg p-2 cursor-pointer hover:bg-zinc-700 transition-colors w-32 light:bg-zinc-100 light:hover:bg-zinc-200";
+      "flex-shrink-0 bg-coal-800 rounded-lg p-2 cursor-pointer hover:bg-coal-700 transition-colors w-32 light:bg-zinc-100 light:hover:bg-zinc-200";
 
     const img = document.createElement("img");
     img.src = anime.image || "";
@@ -515,7 +496,7 @@ function renderRecentlyViewed() {
 
     const score = document.createElement("p");
     score.className = "text-xs text-zinc-400 light:text-zinc-500";
-    score.textContent = anime.score ? `⭐ ${anime.score}` : "No score";
+    score.textContent = anime.score ? `${anime.score}/10` : "No score";
 
     card.appendChild(img);
     card.appendChild(title);
@@ -544,7 +525,7 @@ function renderFavorites() {
 
   favorites.forEach((anime) => {
     const card = document.createElement("div");
-    card.className = "bg-zinc-800 rounded-lg p-2 cursor-pointer hover:bg-zinc-700 transition-colors light:bg-zinc-100 light:hover:bg-zinc-200";
+    card.className = "bg-coal-800 rounded-lg p-2 cursor-pointer hover:bg-coal-700 transition-colors light:bg-zinc-100 light:hover:bg-zinc-200";
 
     const img = document.createElement("img");
     img.src = anime.image || "";
@@ -559,7 +540,7 @@ function renderFavorites() {
 
     const score = document.createElement("p");
     score.className = "text-xs text-zinc-400 light:text-zinc-500";
-    score.textContent = anime.score ? `⭐ ${anime.score}` : "No score";
+    score.textContent = anime.score ? `${anime.score}/10` : "No score";
 
     card.appendChild(img);
     card.appendChild(title);
@@ -654,7 +635,7 @@ async function fetchAnime() {
 
       const msg = document.createElement("p");
       msg.className = "text-red-500 mb-4";
-      msg.textContent = `⚠️ Failed to load anime data. ${error?.name === "AbortError" ? "Request timed out." : "Please try again."}`;
+      msg.textContent = `Failed to load anime data. ${error?.name === "AbortError" ? "Request timed out." : "Please try again."}`;
 
       const retryBtn = document.createElement("button");
       retryBtn.id = "retry-fetch";
@@ -757,7 +738,7 @@ function renderAnime() {
   pageData.forEach((anime) => {
     const card = document.createElement("div");
     card.className =
-      "bg-zinc-800 p-4 rounded-xl shadow-lg hover:shadow-blue-400 hover:scale-105 transition-all duration-300 cursor-pointer relative light:bg-white light:shadow-gray-200 light:hover:shadow-blue-300";
+      "bg-coal-800 p-4 rounded-xl shadow-lg hover:shadow-blue-400 hover:scale-105 transition-all duration-300 cursor-pointer relative light:bg-white light:shadow-gray-200 light:hover:shadow-blue-300";
 
     // Image wrapper
     const imgWrapper = document.createElement("div");
@@ -774,7 +755,7 @@ function renderAnime() {
 
     const scoreBadge = document.createElement("div");
     scoreBadge.className = "absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs light:bg-white light:bg-opacity-80 light:text-zinc-800 light:shadow";
-    scoreBadge.textContent = anime.score ? `⭐ ${anime.score}` : "No score";
+    scoreBadge.textContent = anime.score ? `${anime.score}/10` : "No score";
 
     imgWrapper.appendChild(img);
     imgWrapper.appendChild(scoreBadge);
@@ -819,7 +800,7 @@ function renderPagination() {
     const prevBtn = document.createElement("button");
     prevBtn.textContent = "← Previous";
     prevBtn.className =
-      "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white";
+      "px-4 py-2 bg-coal-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white";
     prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
     pagination.appendChild(prevBtn);
   }
@@ -833,7 +814,7 @@ function renderPagination() {
     btn.className = `px-3 py-2 rounded-md transition-colors ${
       i === currentPage
         ? "bg-blue-500 text-white light:bg-blue-600"
-        : "bg-zinc-700 text-zinc-300 hover:bg-blue-400 light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white"
+        : "bg-coal-700 text-zinc-300 hover:bg-blue-400 light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white"
     }`;
     btn.addEventListener("click", () => goToPage(i));
     pagination.appendChild(btn);
@@ -843,7 +824,7 @@ function renderPagination() {
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "Next →";
     nextBtn.className =
-      "px-4 py-2 bg-zinc-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white";
+      "px-4 py-2 bg-coal-700 text-zinc-300 hover:bg-blue-400 rounded-md transition-colors light:bg-zinc-200 light:text-zinc-700 light:hover:bg-blue-400 light:hover:text-white";
     nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
     pagination.appendChild(nextBtn);
   }
@@ -901,9 +882,6 @@ viewMonthly?.addEventListener("click", () => setViewMode("monthly"));
 viewTop?.addEventListener("click", () => setViewMode("top"));
 viewYearly?.addEventListener("click", () => setViewMode("yearly"));
 
-// Theme toggle
-themeToggle?.addEventListener("click", toggleTheme);
-
 // Day / Month filters
 daySelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
 monthSelect?.addEventListener("change", () => { currentPage = 1; applyFilters(); });
@@ -933,8 +911,6 @@ function populateYearFilter() {
 }
 
 // Initialize
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme) setTheme(savedTheme);
 populateYearFilter();
 loadFilters();
 renderFavorites();
